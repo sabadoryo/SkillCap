@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\TelegramBotController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +18,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/hi', [TestController::class, 'sendHelloMessage']);
+Route::get('/bye', [TestController::class, 'sendByeMessage']);
+Route::post('/getUpdate', [TelegramBotController::class, 'getUpdate']);
+Route::get('/deleteWebhook', [TestController::class, 'removeWebhook']);
+Route::get('/setWebhook', [TestController::class, 'setWebhook']);
