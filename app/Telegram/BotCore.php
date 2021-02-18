@@ -43,7 +43,7 @@ trait BotCore
 
         TelegramRequest::sendSticker([
             'chat_id' => $data['chat_id'],
-            'sticker' => 'CAACAgIAAxkBAAN3YC6PmqXOgqXKI7IX0XLBKSgC9w4AAggAA3VQgRM_fvm4Yh7Dhh4E'
+            'sticker' => 'CAACAgIAAxkBAAPHYC663QABQ2nOT7Ay4iKQyj7eO8avAAIFAAN1UIETZmBnin0s48QeBA'
         ]);
 
     }
@@ -60,6 +60,41 @@ trait BotCore
             'sticker' => 'CAACAgIAAxkBAAN3YC6PmqXOgqXKI7IX0XLBKSgC9w4AAggAA3VQgRM_fvm4Yh7Dhh4E'
         ]);
 
+    }
 
+    public function sendUnknownCommandMessage($data, $user)
+    {
+        $defaultMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Хым, я пока не знаю такой команды, но я обещаю научиться"
+        ]);
+
+        $result = TelegramRequest::sendSticker([
+            'chat_id' => $data['chat_id'],
+            'sticker' => 'CAACAgIAAxkBAAO6YC64kfs5vx_bCtSF4DERHesRa0AAAvkmAAJLagMAASSlgZE1pac6HgQ'
+        ]);
+
+    }
+
+    public function sendCurrentDevStatusMessage($data, $user)
+    {
+        $defaultMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Пока что, бот находиться на очень ранней стадии разработки.🌞 \nВ скором будущем будет обнова, <b>с новыми фичами(контроль категорий, уведомление, спринты)</b> \nА ну самое интересное у каждого пользователя будет свой <i>iqScore</i>😱 \nПока что, это загадка<s>(я сам даже не знаю, что это)</s>",
+            'parse_mode' => 'HTML'
+        ]);
+
+        $result = TelegramRequest::sendSticker([
+            'chat_id' => $data['chat_id'],
+            'sticker' => 'CAACAgIAAxkBAAO5YC62Gw3LkTpMlf_g0ptseBeQXjwAAl8rAAJLagMAARqBSyqErwe8HgQ'
+        ]);
+    }
+
+    public function sendWeKnowEachOtherMessage($data, $user)
+    {
+        $defaultMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Прив)"
+        ]);
     }
 }

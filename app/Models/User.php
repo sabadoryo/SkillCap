@@ -18,7 +18,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username'
+        'username',
+        'state'
     ];
 
     /**
@@ -43,4 +44,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(Skill::class);
     }
+
 }

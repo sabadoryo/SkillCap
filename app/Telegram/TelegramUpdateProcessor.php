@@ -14,15 +14,19 @@ class TelegramUpdateProcessor
     public $username;
     public $chat_id;
     public $text;
+    public $sticker;
 
     public $user_id;
-
-    public $user;
 
     const USER_STATES = [
         'default' => 0,
         'welcome' => 0,
         'awaitingResponseForWelcomeMessage' => 1,
+    ];
+
+    const BOT_COMMANDS = [
+        '/start' => 0,
+        '/info' => 1,
     ];
 
 
@@ -31,7 +35,9 @@ class TelegramUpdateProcessor
         $this->first_name = $data['message']['chat']['first_name'];
         $this->username = $data['message']['chat']['username'];
         $this->chat_id = $data['message']['chat']['id'];
-        $this->text = $data['message']['text'];
+        $this->text = $data['message']['text'] ?? '';
+        $this->sticker = $data['message']['sticker'] ?? '';
+
     }
 
     public function toArray(): array
@@ -44,13 +50,9 @@ class TelegramUpdateProcessor
         ];
     }
 
-    public function realizesNewUser(): bool
-    {
-        return !User::where('username', $this->username)->exists();
-    }
-
     public function processUpdate()
     {
+
         if ($this->realizesNewUser()) {
             $user = User::create([
                 'name' => $this->first_name,
@@ -61,9 +63,30 @@ class TelegramUpdateProcessor
 
             $user->state = 'awaitingResponseForWelcomeMessage';
             $user->save();
-        } else {
+
+            return [];
+        }
+
+        if ($this->realizesBotCommand()) {
+            $commandIndex = isset(self::BOT_COMMANDS[$this->text]) ? self::BOT_COMMANDS[$this->text] : 'unknown';
+
+            switch ($commandIndex) {
+                case 'unknown':
+                    $this->sendUnknownCommandMessage($this->toArray(), []);
+                    break;
+                case 0:
+                    $this->sendWeKnowEachOtherMessage($this->toArray(), []);
+                    break;
+                case 1:
+                    $this->sendCurrentDevStatusMessage($this->toArray(), []);
+                    break;
+            }
+
+            return [];
+        }
+
+        if ($this->realizesUserState()){
             $user = User::where('username', $this->username)->first();
-            $this->user_id = $user->id;
 
             $stateIndex = self::USER_STATES[$user->state];
 
@@ -79,6 +102,7 @@ class TelegramUpdateProcessor
                         $this->sendWrongFormatSkillMessage($this->toArray(), $user);
                     }
                     break;
+
                 case 1:
                     $skillInfo = $this->parseSkillInfo();
 
@@ -92,9 +116,7 @@ class TelegramUpdateProcessor
                     } else {
                         $this->sendWrongFormatSkillMessage($this->toArray(), $user);
                     }
-
                     break;
-
             }
         }
     }
@@ -111,5 +133,24 @@ class TelegramUpdateProcessor
         } else {
             return null;
         }
+    }
+
+    public function realizesBotCommand(): bool
+    {
+        if (substr($this->text, 0, 1) == '/') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function realizesNewUser(): bool
+    {
+        return !User::where('username', $this->username)->exists();
+    }
+
+    public function realizesUserState()
+    {
+        return User::where('username', $this->username)->first()->state;
     }
 }
