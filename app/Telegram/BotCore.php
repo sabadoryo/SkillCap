@@ -41,6 +41,11 @@ trait BotCore
             'text' => "Кажется не правильный формат повтори пожалуйста!"
         ]);
 
+        TelegramRequest::sendSticker([
+            'chat_id' => $data['chat_id'],
+            'sticker' => 'CAACAgIAAxkBAAN3YC6PmqXOgqXKI7IX0XLBKSgC9w4AAggAA3VQgRM_fvm4Yh7Dhh4E'
+        ]);
+
     }
 
     public function sendDefaultSkillSuccessMessage($data, $user)
@@ -54,7 +59,7 @@ trait BotCore
             'chat_id' => $data['chat_id'],
             'sticker' => 'CAACAgIAAxkBAAN3YC6PmqXOgqXKI7IX0XLBKSgC9w4AAggAA3VQgRM_fvm4Yh7Dhh4E'
         ]);
-        
+
 
     }
 }
