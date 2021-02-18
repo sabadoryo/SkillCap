@@ -38,7 +38,8 @@ trait BotCore
     {
         $wrongFormatMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
-            'text' => "Кажется не правильный формат повтори пожалуйста!"
+            'text' => "Кажется не правильный формат повтори пожалуйста! \n <b>SkillCategory : SkillDescription</b>",
+            'parse_mode' => 'HTML'
         ]);
 
         TelegramRequest::sendSticker([
