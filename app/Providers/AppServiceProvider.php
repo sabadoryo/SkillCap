@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Classes\TelegramClass;
 use Illuminate\Support\ServiceProvider;
+use Longman\TelegramBot\Telegram;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(Telegram::class, function ($app) {
+            return new Telegram(config('telegrambot.api_key'), config('telegrambot.username'));
+        });
     }
 
     /**
