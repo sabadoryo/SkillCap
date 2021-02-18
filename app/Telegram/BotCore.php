@@ -49,5 +49,12 @@ trait BotCore
             'chat_id' => $data['chat_id'],
             'text' => "Записал! Продолжай прокачиваться🚀"
         ]);
+
+        $result = TelegramRequest::sendSticker([
+            'chat_id' => $data['chat_id'],
+            'sticker' => 'CAACAgIAAxkBAAN3YC6PmqXOgqXKI7IX0XLBKSgC9w4AAggAA3VQgRM_fvm4Yh7Dhh4E'
+        ]);
+        
+
     }
 }
