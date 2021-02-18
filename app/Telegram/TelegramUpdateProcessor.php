@@ -21,6 +21,7 @@ class TelegramUpdateProcessor
 
     const USER_STATES = [
         'default' => 0,
+        'welcome' => 0,
         'awaitingResponseForWelcomeMessage' => 1,
     ];
 
