@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Classes\TelegramClass;
 use Illuminate\Support\ServiceProvider;
 use Longman\TelegramBot\Telegram;
 
