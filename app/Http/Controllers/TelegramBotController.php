@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TelegramUpdateResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +22,7 @@ class TelegramBotController extends Controller
     {
         $data = $request->all();
 
-        Log::info($data);
+        Log::info(new TelegramUpdateResource($data));
 
         if (!User::where('username', $data['message']['chat']['username'])->exists()) {
             $user = new User();
