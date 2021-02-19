@@ -161,6 +161,6 @@ class TelegramUpdateProcessor
 
     public function realizesSticker()
     {
-        return isset($this->sticker);
+        return $this->sticker != null;
     }
 }
