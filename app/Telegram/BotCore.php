@@ -98,4 +98,12 @@ trait BotCore
             'text' => "Прив)"
         ]);
     }
+
+    public function sendStickerRecognitionSoonMessage($data, $user)
+    {
+        $defaultMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Пока что я не знаю, чем отвечать на стикеры :/, но скоро смогу распозновать твое настроение по стикеру"
+        ]);
+    }
 }

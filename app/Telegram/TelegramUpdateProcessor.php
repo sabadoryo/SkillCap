@@ -85,6 +85,10 @@ class TelegramUpdateProcessor
             return [];
         }
 
+        if ($this->realizesSticker()){
+            $this->sendStickerRecognitionSoonMessage();
+        }
+
         if ($this->realizesUserState()){
             $user = User::where('username', $this->username)->first();
 
@@ -152,5 +156,10 @@ class TelegramUpdateProcessor
     public function realizesUserState()
     {
         return User::where('username', $this->username)->first()->state;
+    }
+
+    public function realizesSticker()
+    {
+        return isset($this->sticker);
     }
 }
