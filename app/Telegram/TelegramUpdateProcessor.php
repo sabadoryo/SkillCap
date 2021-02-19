@@ -87,6 +87,7 @@ class TelegramUpdateProcessor
 
         if ($this->realizesSticker()){
             $this->sendStickerRecognitionSoonMessage($this->toArray(), []);
+            return [];
         }
 
         if ($this->realizesUserState()){
