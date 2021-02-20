@@ -99,6 +99,7 @@ class TelegramUpdateProcessor
                 case 3:
                     $this->sendAskingForNewCategoryNameMessage($this->toArray());
                     $this->user->state = 7;
+                    $this->user->save();
                     break;
 
             }
@@ -210,6 +211,8 @@ class TelegramUpdateProcessor
                         $userCategories = $this->user->categories()->withCount('skills')->get();
 
                         $this->newCategoryAdded($this->toArray(), $userCategories);
+                        $this->user->state = 5;
+                        $this->user->save();
                     }
             }
         }
