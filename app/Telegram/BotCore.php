@@ -252,7 +252,7 @@ trait BotCore
 
         $congratulationMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
-            'text' => "Новая категория добавлена:",
+            'text' => "Новая категория добавлена!",
             'reply_markup' => $reply_markup,
             'parse_mode' => 'HTML'
         ]);
