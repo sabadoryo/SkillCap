@@ -246,7 +246,7 @@ trait BotCore
         ]);
     }
 
-    public function sendNewCategoryAdded($data, $categories)
+    public function newCategoryAdded($data, $categories)
     {
         $reply_markup = $this->generateReplyMarkupForCategories($categories);
 
