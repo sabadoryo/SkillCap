@@ -183,6 +183,14 @@ class TelegramUpdateProcessor
 
                             $this->sendAskingForNewSkillMessage($this->toArray());
                         }
+                        if ($this->callback_query['data'] == 'goBackToCategoriesList') {
+                            $this->user->state = 5;
+                            $this->user->save();
+
+                            $userCategories = $this->user->categories()->withCount('skills')->get();
+
+                            $this->editLastBotMessageAndSendThereCategoriesList($this->toArray(),$userCategories);
+                        }
                     }
                     break;
                 case 'waiting_for_new_skill':
@@ -214,6 +222,7 @@ class TelegramUpdateProcessor
                         $this->user->state = 5;
                         $this->user->save();
                     }
+                    break;
             }
         }
     }

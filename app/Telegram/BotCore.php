@@ -114,9 +114,14 @@ trait BotCore
         }, $items->toArray());
 
         array_unshift($itemsArray, [
-            'text' => 'Добавить',
+            'text' => 'Добавить новый навык!➕',
             'callback_data' => 'addNewSkill',
         ]);
+
+        $itemsArray[] = [
+            'text' => '👈Назад',
+            'callback_data' => 'goBackToCategoriesList',
+        ];
 
         $max_per_row = 1;
         $per_row = sqrt(count($itemsArray));
@@ -236,6 +241,23 @@ trait BotCore
         $defaultMessage = TelegramRequest::sendMessage([
             'chat_id' => $chat_id,
             'text' => $message,
+        ]);
+    }
+
+    public function editLastBotMessageAndSendThereCategoriesList($data, $categories)
+    {
+        $reply_markup = $this->generateReplyMarkupForCategories($categories);
+
+        $result = TelegramRequest::editMessageText([
+            'chat_id' => $data['chat_id'],
+            'text' => 'Ваши категории',
+            'message_id' => $data['message_id']
+        ]);
+
+        TelegramRequest::editMessageReplyMarkup([
+            'chat_id' => $data['chat_id'],
+            'message_id' => $data['message_id'],
+            'reply_markup' => $reply_markup,
         ]);
     }
 }
