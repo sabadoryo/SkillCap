@@ -13,6 +13,8 @@ class TelegramBotController extends Controller
 {
     protected $telegram;
 
+    use BotCore;
+
     public function __construct(Telegram $telegram)
     {
         $this->telegram = $telegram;
@@ -28,5 +30,14 @@ class TelegramBotController extends Controller
 
         $telegram_update_processor->processUpdate();
 
+    }
+
+    public function sendNotification()
+    {
+        $users = User::all();
+
+        foreach ($users as $user) {
+            $this->sendNotificationMessage($user->chat_id, 'И так баги исправлены, отмечаем)00');
+        }
     }
 }

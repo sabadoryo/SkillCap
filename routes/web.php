@@ -24,3 +24,6 @@ Route::get('/bye', [TestController::class, 'sendByeMessage']);
 Route::post('/getUpdate', [TelegramBotController::class, 'getUpdate']);
 Route::get('/deleteWebhook', [TestController::class, 'removeWebhook']);
 Route::get('/setWebhook', [TestController::class, 'setWebhook']);
+
+
+Route::get('/sendNotification', [TelegramBotController::class, 'sendNotification']);

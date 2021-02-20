@@ -29,43 +29,6 @@ trait BotCore
         }
     }
 
-    public function sendFirstSkillSuccessMessage($data, $user)
-    {
-        $congratulationMessage = TelegramRequest::sendMessage([
-            'chat_id' => $data['chat_id'],
-            'text' => "Огоо, круто! Тоже на днях попробую изучить это \n Но ты не теряй хватку, и продолжай в том же духе. Жду от тебя вестей каждый день!"
-        ]);
-    }
-
-    public function sendWrongFormatSkillMessage($data, $user)
-    {
-        $wrongFormatMessage = TelegramRequest::sendMessage([
-            'chat_id' => $data['chat_id'],
-            'text' => "Кажется не правильный формат повтори пожалуйста! \n <b>SkillCategory : SkillDescription</b>",
-            'parse_mode' => 'HTML'
-        ]);
-
-        TelegramRequest::sendSticker([
-            'chat_id' => $data['chat_id'],
-            'sticker' => 'CAACAgIAAxkBAAPHYC663QABQ2nOT7Ay4iKQyj7eO8avAAIFAAN1UIETZmBnin0s48QeBA'
-        ]);
-
-    }
-
-    public function sendDefaultSkillSuccessMessage($data, $user)
-    {
-        $defaultMessage = TelegramRequest::sendMessage([
-            'chat_id' => $data['chat_id'],
-            'text' => "Записал! Продолжай прокачиваться🚀"
-        ]);
-
-        $result = TelegramRequest::sendSticker([
-            'chat_id' => $data['chat_id'],
-            'sticker' => 'CAACAgIAAxkBAAN3YC6PmqXOgqXKI7IX0XLBKSgC9w4AAggAA3VQgRM_fvm4Yh7Dhh4E'
-        ]);
-
-    }
-
     public function sendUnknownCommandMessage($data, $user)
     {
         $defaultMessage = TelegramRequest::sendMessage([
@@ -75,7 +38,7 @@ trait BotCore
 
         $result = TelegramRequest::sendSticker([
             'chat_id' => $data['chat_id'],
-            'sticker' => 'CAACAgIAAxkBAAO6YC64kfs5vx_bCtSF4DERHesRa0AAAvkmAAJLagMAASSlgZE1pac6HgQ'
+            'sticker' => 'CAACAgIAAxkBAAIBcGAxHs1gPbv7nNat3UEI_DMTofbxAAI6AQACufOXC9qMg-fB6v7tHgQ'
         ]);
 
     }
@@ -84,13 +47,13 @@ trait BotCore
     {
         $defaultMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
-            'text' => "На момент даты 20.02.2021 : были добавлена фича с категориями. Скоро новые темки будут) и чекайте почаще команды бота плез",
+            'text' => "На момент даты 20.02.2021 : была добавлена фича с категориями. Скоро новые темки будут) и чекайте почаще команды бота плез",
             'parse_mode' => 'HTML'
         ]);
 
         $result = TelegramRequest::sendSticker([
             'chat_id' => $data['chat_id'],
-            'sticker' => 'CAACAgIAAxkBAAO5YC62Gw3LkTpMlf_g0ptseBeQXjwAAl8rAAJLagMAARqBSyqErwe8HgQ'
+            'sticker' => 'CAACAgIAAxkBAAIBcGAxHs1gPbv7nNat3UEI_DMTofbxAAI6AQACufOXC9qMg-fB6v7tHgQ'
         ]);
     }
 
@@ -200,6 +163,11 @@ trait BotCore
             'reply_markup' => $reply_markup,
             'parse_mode' => 'HTML'
         ]);
+
+        $result = TelegramRequest::sendSticker([
+            'chat_id' => $data['chat_id'],
+            'sticker' => 'CAACAgIAAxkBAAIBcGAxHs1gPbv7nNat3UEI_DMTofbxAAI6AQACufOXC9qMg-fB6v7tHgQ'
+        ]);
     }
 
     public function sendSkillsList($data, $category)
@@ -223,6 +191,11 @@ trait BotCore
             'text' => "Новый скилл успешно добавлен!",
             'reply_markup' => $reply_markup,
             'parse_mode' => 'HTML'
+        ]);
+
+        TelegramRequest::sendSticker([
+            'chat_id' => $data['chat_id'],
+            'sticker' => 'CAACAgIAAxkBAAIBcGAxHs1gPbv7nNat3UEI_DMTofbxAAI6AQACufOXC9qMg-fB6v7tHgQ',
         ]);
     }
 
@@ -255,6 +228,14 @@ trait BotCore
             'text' => "Новая категория добавлена!",
             'reply_markup' => $reply_markup,
             'parse_mode' => 'HTML'
+        ]);
+    }
+
+    public function sendNotificationMessage($chat_id, $message)
+    {
+        $defaultMessage = TelegramRequest::sendMessage([
+            'chat_id' => $chat_id,
+            'text' => $message,
         ]);
     }
 }

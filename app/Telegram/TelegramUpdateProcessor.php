@@ -43,7 +43,7 @@ class TelegramUpdateProcessor
         $this->first_name = $data['message']['chat']['first_name'] ?? $data['callback_query']['message']['chat']['first_name'] ?? '';
         $this->username = $data['message']['chat']['username'] ?? $data['callback_query']['message']['chat']['username'] ?? '';
         $this->chat_id = $data['message']['chat']['id'] ?? $data['callback_query']['message']['chat']['id'] ?? '';
-        $this->text = $data['message']['text'] ?? $data['callback_query']['message']['text'];
+        $this->text = $data['message']['text'] ?? $data['callback_query']['message']['text'] ?? '';
         $this->sticker = $data['message']['sticker'] ?? '';
         $this->callback_query = $data['callback_query'] ?? '';
         $this->message_id = $data['message']['message_id'] ?? $data['callback_query']['message']['message_id'] ?? '';
