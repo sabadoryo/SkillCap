@@ -19,7 +19,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'username',
-        'state'
+        'state',
+        'chat_id',
+        'last_clicked_category_id'
     ];
 
     /**
@@ -40,9 +42,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function skills()
+    public function categories()
     {
-        return $this->hasMany(Skill::class);
+        return $this->belongsToMany(Category::class, 'user_category', 'user_id', 'category_id');
     }
 
 }

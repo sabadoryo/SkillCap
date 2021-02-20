@@ -5,6 +5,8 @@ namespace App\Telegram;
 
 
 use Illuminate\Support\Facades\Log;
+use Longman\TelegramBot\Entities\InlineKeyboard;
+use Longman\TelegramBot\Entities\InlineKeyboardButton;
 use Longman\TelegramBot\Request as TelegramRequest;
 
 trait BotCore
@@ -13,16 +15,17 @@ trait BotCore
     {
         $hiMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
-            'text' => 'Приветствую, я SkillBot. Моя единственная задача, это собирать данные о твоем нарастающем скилле. Ты можешь поделиться со мной и я буду вести отчет!',
+            'text' => "Приветствую, я <b>SkillBot</b>\nМоя единственная задача, это собирать данные о твоем нарастающем скилле. Ты можешь поделиться со мной и я буду вести отчет!\nЧто интересное или новое ты отркыл для себя сегодня? Это может быть все-что угодно, но для начала придумай категорию, в котором будет хранится этот скилл и все похожие с той же классификацией.",
+            'parse_mode' => 'HTML'
         ]);
+
 
         if ($hiMessage->isOk()) {
             TelegramRequest::sendMessage([
                 'chat_id' => $data['chat_id'],
-                'text' => "Попробуй написать, то чему ты сегодня научился \nНапример я сегодня научился, как можно скачивать бесплатные игры😍 \nОтправляй в формате: \n<b>Школьная алгебра : Понял теорему дискриминанта</b> \n<b>Пиратство : Скачал игру в тридаблю.бесплтаныеигры.ру</b>",
+                'text' => "Введи название категории. Например я сегодня научилась готовить яищницу, и назвала бы категорию этого скилла <b>Готовка</b> или <b>Кухня</b> \nА вообще называй как хочешь😋",
                 'parse_mode' => 'HTML'
             ]);
-
         }
     }
 
@@ -104,6 +107,154 @@ trait BotCore
         $defaultMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
             'text' => "Пока что я не знаю, чем отвечать на это :/, но зато скоро смогу распозновать твое настроение по стикеру :3"
+        ]);
+    }
+
+    public function sendFirstCategorySuccessMessage($data, $userCategories)
+    {
+
+        $reply_markup = $this->generateReplyMarkupForCategories($userCategories);
+
+        $congratulationMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Отлично!\n Теперь <b>".$data['text']."</b> есть в списке твоих категорий. Нажми на нее, чтобы посмотреть список скиллов в этой категории.",
+            'reply_markup' => $reply_markup,
+            'parse_mode' => 'HTML'
+        ]);
+    }
+
+    public function generateReplyMarkupForCategories($items)
+    {
+
+        $itemsArray = array_map(function ($cat) {
+            return [
+                'text' => $cat['title'].'('.$cat['skills_count'].')',
+                'callback_data' => $cat['id'],
+            ];
+        }, $items->toArray());
+
+        $max_per_row = 2;
+        $per_row = sqrt(count($itemsArray));
+        $rows = array_chunk($itemsArray, $per_row === floor($per_row) ? $per_row : $max_per_row);
+        $reply_markup = new InlineKeyboard(...$rows);
+
+        return $reply_markup;
+    }
+
+    public function generateReplyMarkupForSkills($items)
+    {
+        $itemsArray = array_map(function ($cat) {
+            return [
+                'text' => $cat['description'],
+                'callback_data' => 'none',
+            ];
+        }, $items->toArray());
+
+        array_unshift($itemsArray, [
+            'text' => 'Добавить',
+            'callback_data' => 'addNewSkill',
+        ]);
+
+        $max_per_row = 1;
+        $per_row = sqrt(count($itemsArray));
+        $rows = array_chunk($itemsArray, $per_row === floor($per_row) ? $per_row : $max_per_row);
+        $reply_markup = new InlineKeyboard(...$rows);
+
+        return $reply_markup;
+
+    }
+
+
+    public function editPreviousMessageAndShowSkillList($data, $category)
+    {
+        $reply_markup = $this->generateReplyMarkupForSkills($category->skills);
+
+        $result = TelegramRequest::editMessageText([
+            'chat_id' => $data['message']['chat']['id'],
+            'text' => 'Теперь попробуй добавить первый свой скилл в категорию '.$category->title.',нажми на кнопку добавить после чего введи описание своего навыка.',
+            'message_id' => $data['message']['message_id']
+        ]);
+
+        TelegramRequest::editMessageReplyMarkup([
+            'chat_id' => $data['message']['chat']['id'],
+            'message_id' => $data['message']['message_id'],
+            'reply_markup' => $reply_markup,
+        ]);
+    }
+
+    public function sendAskingForNewSkillMessage($data)
+    {
+        $defaultMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Окей,отправь мне название нового скилла!"
+        ]);
+    }
+
+    public function sendIntroFinishedMessage($data, $categories)
+    {
+        $reply_markup = $this->generateReplyMarkupForCategories($categories);
+
+        $congratulationMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Чтож поздравляю тебя с первым навыком! Продолжай в том же духе чеееел",
+            'reply_markup' => $reply_markup,
+            'parse_mode' => 'HTML'
+        ]);
+    }
+
+    public function sendSkillsList($data, $category)
+    {
+        $reply_markup = $this->generateReplyMarkupForSkills($category->skills);
+
+        $result = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Ваши навыки в <b>".$category->title.'</b>:',
+            'reply_markup' => $reply_markup,
+            'parse_mode' => 'HTML'
+        ]);
+    }
+
+    public function sendNewSkillAdded($data, $categories)
+    {
+        $reply_markup = $this->generateReplyMarkupForCategories($categories);
+
+        $congratulationMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Новый скилл успешно добавлен!",
+            'reply_markup' => $reply_markup,
+            'parse_mode' => 'HTML'
+        ]);
+    }
+
+    public function sendCategoriesList($data, $categories)
+    {
+        $reply_markup = $this->generateReplyMarkupForCategories($categories);
+
+        $congratulationMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Ваши категории:",
+            'reply_markup' => $reply_markup,
+            'parse_mode' => 'HTML'
+        ]);
+    }
+
+    public function sendAskingForNewCategoryNameMessage($data)
+    {
+        $defaultMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Введи название новой категории!"
+        ]);
+    }
+
+    public function sendNewCategoryAdded($data, $categories)
+    {
+        $reply_markup = $this->generateReplyMarkupForCategories($categories);
+
+        $congratulationMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Новая категория добавлена:",
+            'reply_markup' => $reply_markup,
+            'parse_mode' => 'HTML'
         ]);
     }
 }

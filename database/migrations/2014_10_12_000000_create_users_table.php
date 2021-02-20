@@ -17,7 +17,10 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->string('email')->unique()->nullable();
-            $table->string('username')->unique();
+            $table->string('username')->unique()->nullable();
+            $table->string('state')->nullable();
+            $table->boolean('daily_skill_learned')->default(false);
+            $table->string('chat_id')->unique();
             $table->timestamps();
         });
     }

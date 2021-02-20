@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSkillsTable extends Migration
+class AddLastCategoryClickedFieldIntoUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,8 @@ class CreateSkillsTable extends Migration
      */
     public function up()
     {
-        Schema::create('skills', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->nullable();
-            $table->text('description')->nullable();
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->bigInteger('last_clicked_category_id')->nullable();
         });
     }
 
@@ -28,6 +25,8 @@ class CreateSkillsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('skills');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('last_clicked_category_id');
+        });
     }
 }

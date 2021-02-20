@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddStateFieldIntoUsersTable extends Migration
+class CreateCategorySkillTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,9 @@ class AddStateFieldIntoUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('state')->default('welcome');
+        Schema::create('category_skill', function (Blueprint $table) {
+            $table->bigInteger('category_id');
+            $table->bigInteger('skill_id');
         });
     }
 
@@ -25,8 +26,6 @@ class AddStateFieldIntoUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('state');
-        });
+        Schema::dropIfExists('category_skill');
     }
 }
