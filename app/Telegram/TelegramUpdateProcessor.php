@@ -94,7 +94,7 @@ class TelegramUpdateProcessor
                     $this->sendCurrentDevStatusMessage($this->toArray(), []);
                     break;
                 case 2:
-                    $this->sendCategoriesList($this->toArray(), $this->user->categories);
+                    $this->sendCategoriesList($this->toArray(), $this->user->categories()->withCount('skills')->get());
                     break;
                 case 3:
                     $this->sendAskingForNewCategoryNameMessage($this->toArray());
