@@ -30,6 +30,8 @@ class TelegramBotController extends Controller
 
         $telegram_update_processor->processUpdate();
 
+        return true;
+
     }
 
     public function sendNotification()
