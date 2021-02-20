@@ -123,9 +123,7 @@ trait BotCore
             'callback_data' => 'goBackToCategoriesList',
         ];
 
-        $max_per_row = 1;
-        $per_row = sqrt(count($itemsArray));
-        $rows = array_chunk($itemsArray, $per_row === floor($per_row) ? $per_row : $max_per_row);
+        $rows = array_chunk($itemsArray, 1);
         $reply_markup = new InlineKeyboard(...$rows);
 
         return $reply_markup;
