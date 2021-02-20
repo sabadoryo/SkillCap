@@ -149,7 +149,7 @@ trait BotCore
     {
         $defaultMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
-            'text' => "Окей,отправь мне название нового скилла!"
+            'text' => "Окей,отправь мне название нового скилла..."
         ]);
     }
 
@@ -159,7 +159,7 @@ trait BotCore
 
         $congratulationMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
-            'text' => "Чтож поздравляю тебя с первым навыком! Продолжай в том же духе чеееел",
+            'text' => "Чтож поздравляю тебя с первым навыком! Продолжай в том же духе!",
             'reply_markup' => $reply_markup,
             'parse_mode' => 'HTML'
         ]);
@@ -205,7 +205,7 @@ trait BotCore
 
         $congratulationMessage = TelegramRequest::sendMessage([
             'chat_id' => $data['chat_id'],
-            'text' => "Ваши категории:",
+            'text' => "Ваши категории навыков:",
             'reply_markup' => $reply_markup,
             'parse_mode' => 'HTML'
         ]);
