@@ -200,7 +200,7 @@ trait BotCore
 
         TelegramRequest::sendSticker([
             'chat_id' => $data['chat_id'],
-            'sticker' => 'CAACAgIAAxkBAAIBcGAxHs1gPbv7nNat3UEI_DMTofbxAAI6AQACufOXC9qMg-fB6v7tHgQ',
+            'sticker' => 'CAACAgIAAxkBAAIBsWAxKJHiZX8kci2DG7CojJTv3DpAAAIYAQACufOXC3DZ_U5hjxVzHgQ',
         ]);
     }
 
