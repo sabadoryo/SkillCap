@@ -250,7 +250,7 @@ trait BotCore
 
         $result = TelegramRequest::editMessageText([
             'chat_id' => $data['chat_id'],
-            'text' => 'Ваши категории',
+            'text' => 'Ваши категории навыков:',
             'message_id' => $data['message_id']
         ]);
 
