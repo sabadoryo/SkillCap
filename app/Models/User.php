@@ -18,8 +18,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
-        'password',
+        'username',
+        'state',
+        'chat_id',
+        'last_clicked_category_id'
     ];
 
     /**
@@ -28,8 +30,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password',
-        'remember_token',
+
     ];
 
     /**
@@ -40,4 +41,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'user_category', 'user_id', 'category_id');
+    }
+
 }
