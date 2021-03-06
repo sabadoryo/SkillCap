@@ -14,7 +14,8 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.12",
         "laravel/tinker": "^2.5",
-        "longman/telegram-bot": "^0.70.1"
+        "longman/telegram-bot": "^0.70.1",
+        "staudenmeir/eloquent-has-many-deep": "^1.7"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

@@ -40,7 +40,6 @@ trait BotCore
             'chat_id' => $data['chat_id'],
             'sticker' => 'CAACAgIAAxkBAAIBcGAxHs1gPbv7nNat3UEI_DMTofbxAAI6AQACufOXC9qMg-fB6v7tHgQ'
         ]);
-
     }
 
     public function sendCurrentDevStatusMessage($data, $user)
@@ -75,7 +74,6 @@ trait BotCore
 
     public function sendFirstCategorySuccessMessage($data, $userCategories)
     {
-
         $reply_markup = $this->generateReplyMarkupForCategories($userCategories);
 
         $congratulationMessage = TelegramRequest::sendMessage([
@@ -88,7 +86,6 @@ trait BotCore
 
     public function generateReplyMarkupForCategories($items)
     {
-
         $itemsArray = array_map(function ($cat) {
             return [
                 'text' => $cat['title'].'('.$cat['skills_count'].')',
@@ -114,12 +111,12 @@ trait BotCore
         }, $items->toArray());
 
         array_unshift($itemsArray, [
-            'text' => 'Добавить новый навык!➕',
+            'text' => '➕',
             'callback_data' => 'addNewSkill',
         ]);
 
         $itemsArray[] = [
-            'text' => '👈Назад',
+            'text' => '👈',
             'callback_data' => 'goBackToCategoriesList',
         ];
 
@@ -127,7 +124,6 @@ trait BotCore
         $reply_markup = new InlineKeyboard(...$rows);
 
         return $reply_markup;
-
     }
 
 
@@ -257,5 +253,62 @@ trait BotCore
             'message_id' => $data['message_id'],
             'reply_markup' => $reply_markup,
         ]);
+    }
+
+    public function sendSkillVoteMessage($data, $skill)
+    {
+        $reply_markup = $this->generateReplyMarkupForSkillVoting($skill);
+
+        $congratulationMessage = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => "Этот скилл принадлежит некому... А хотя, лучше тебе не знать(пока,что). \n"."Оцени скилл по его описанию от 1 до 3\n".$skill->description,
+            'reply_markup' => $reply_markup,
+            'parse_mode' => 'HTML'
+        ]);
+    }
+
+    public function generateReplyMarkupForSkillVoting($skill): InlineKeyboard
+    {
+        $reply_markup = new InlineKeyboard([
+            ['text' => 1, 'callback_data' => '{"skillId":'.$skill->id.',"vote":1}'],
+            ['text' => 2, 'callback_data' => '{"skillId":'.$skill->id.',"vote":2}'],
+            ['text' => 3, 'callback_data' => '{"skillId":'.$skill->id.',"vote":3}'],
+        ]);
+
+        return $reply_markup;
+    }
+
+    public function sendNoSkillsAreAvailableForVoting($data)
+    {
+        $result = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => 'сори чел на данный момент не осталось скиллов для оценивания( закидывайте скиллы чаще',
+        ]);
+    }
+
+    public function sendMessageWannaContinueVoting($data, $userSkillDailyVotesAmount)
+    {
+        $result = TelegramRequest::editMessageText([
+            'chat_id' => $data['chat_id'],
+            'text' => 'Хотите продолжить? Вы можете проголосовать еще '.(5 - $userSkillDailyVotesAmount).' раз',
+            'message_id' => $data['message_id']
+        ]);
+
+        TelegramRequest::editMessageReplyMarkup([
+            'chat_id' => $data['chat_id'],
+            'message_id' => $data['message_id'],
+            'reply_markup' => new InlineKeyboard([
+                ['text' => 'Продолжить', 'callback_data' => 'continueVoting'],
+            ]),
+        ]);
+    }
+
+    public function sendStatsMessage($data, $total, $category, $skill)
+    {
+        $result = TelegramRequest::sendMessage([
+            'chat_id' => $data['chat_id'],
+            'text' => 'Ваш тотал SKILLSCORE : ' . $total . '\n' . 'Больше всего очков у категории : *' . $category->title .':'. $category->assessment_points .'\n' .'Больше всего очков у скилла: ' . $skill->description . ' : ' . $skill->assessment_points,
+            'parse_mode' => 'HTML'
+            ]);
     }
 }

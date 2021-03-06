@@ -11,7 +11,8 @@ class Category extends Model
 
     protected $fillable = [
         'title',
-        'description'
+        'description',
+        'assessment_points'
     ];
 
     public function skills()

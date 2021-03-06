@@ -3,7 +3,10 @@
 
 namespace App\Telegram;
 
+use App\Models\Skill;
 use App\Models\User;
+use App\Models\UserSkillAssessment;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Log;
 
 class TelegramUpdateProcessor
@@ -35,6 +38,8 @@ class TelegramUpdateProcessor
         '/info' => 1,
         '/categories' => 2,
         '/newcategory' => 3,
+        '/vote' => 4,
+        '/stats' => 5,
     ];
 
 
@@ -62,25 +67,26 @@ class TelegramUpdateProcessor
 
     public function processUpdate()
     {
+        $userRepository = new UserRepository();
 
         if ($this->realizesNewUser()) {
-            $user = User::create([
+            $data = [
                 'name' => $this->first_name,
                 'username' => $this->username,
                 'chat_id' => $this->chat_id,
-            ]);
+            ];
+
+            $user = $userRepository->addNewUser($data);
 
             $this->sendWelcomeMessage($this->toArray(), $user);
-
-            $user->state = 1;
-            $user->save();
 
             return [];
         }
 
-        $this->user = User::where('chat_id', $this->chat_id)->first();
+        $this->user = $userRepository->getUserByChatId($this->chat_id);
 
         if ($this->realizesBotCommand()) {
+
             $commandIndex = isset(self::BOT_COMMANDS[$this->text]) ? self::BOT_COMMANDS[$this->text] : 'unknown';
 
             switch ($commandIndex) {
@@ -98,10 +104,27 @@ class TelegramUpdateProcessor
                     break;
                 case 3:
                     $this->sendAskingForNewCategoryNameMessage($this->toArray());
-                    $this->user->state = 7;
-                    $this->user->save();
+                    $userRepository->changeUserState($this->user, 7);
                     break;
+                case 4:
+                    if ($this->user->daily_votes_amount <= 5) {
 
+                        $skillForVote = $userRepository->getAvailableSkillForVoting($this->user);
+
+                        if ($skillForVote) {
+                            $this->sendSkillVoteMessage($this->toArray(), $skillForVote);
+                        } else {
+                            $this->sendNoSkillsAreAvailableForVoting($this->toArray());
+                        }
+                    }
+                    break;
+                case 5:
+
+                    $totalPTS = $userRepository->getTotalPoints($this->user);
+                    $category = $userRepository->getCategoryWithHighestPoints($this->user);
+                    $skill = $userRepository->getSkillWithHighestPoints($this->user);
+
+                    $this->sendStatsMessage($this->toArray(),$totalPTS, $category, $skill);
             }
 
             return [];
@@ -127,28 +150,25 @@ class TelegramUpdateProcessor
 
                         $this->sendFirstCategorySuccessMessage($this->toArray(), $userCategories);
 
-                        $this->user->state = 2;
-
-                        $this->user->save();
+                        $userRepository->changeUserState($this->user, 2);
                     }
                     break;
                 case 'intro_step_2_waiting_for_category_click_from_list':
                     if ($this->isValidQueryCallback()) {
-                        $skills = $this->user->categories()->where('id', $this->callback_query['data'])->first();
+                        $skills = $userRepository->getUserCategoryById($this->user, $this->callback_query['data']);
+
                         $this->editPreviousMessageAndShowSkillList($this->callback_query, $skills);
 
-                        $this->user->state = 3;
-                        $this->user->last_clicked_category_id = $this->callback_query['data'];
+                        $userRepository->changeUserState($this->user, 3);
+                        $userRepository->changeUserLastClickedCategoryId($this->user, $this->callback_query['data']);
 
-                        $this->user->save();
                     }
                     break;
                 case 'intro_step_3_waiting_for_new_skill_click_button' :
                     if ($this->isValidQueryCallback()) {
                         $this->sendAskingForNewSkillMessage($this->toArray());
 
-                        $this->user->state = 4;
-                        $this->user->save();
+                        $userRepository->changeUserState($this->user, 4);
                     }
                     break;
                 case 'intro_step_4_waiting_for_new_skill' :
@@ -164,50 +184,88 @@ class TelegramUpdateProcessor
 
                         $this->sendIntroFinishedMessage($this->toArray(), $userCategories);
 
-                        $this->user->state = 5;
-                        $this->user->save();
+                        $userRepository->changeUserState($this->user, 5);
                     }
                     break;
                 case 'default':
                     if ($this->callback_query != null) {
                         if (is_numeric($this->callback_query['data'])) {
-                            $this->user->last_clicked_category_id = $this->callback_query['data'];
-                            $this->user->save();
+                            $userRepository->changeUserLastClickedCategoryId($this->user,
+                                $this->callback_query['data']);
 
-                            $category = $this->user->categories()->where('id', $this->callback_query['data'])->first();
+                            $category = $userRepository->getUserCategoryById($this->user,
+                                $this->callback_query['data']);
+
                             $this->sendSkillsList($this->toArray(), $category);
                         }
                         if ($this->callback_query['data'] == 'addNewSkill') {
-                            $this->user->state = 6;
-                            $this->user->save();
+                            $userRepository->changeUserState($this->user, 6);
 
                             $this->sendAskingForNewSkillMessage($this->toArray());
                         }
                         if ($this->callback_query['data'] == 'goBackToCategoriesList') {
-                            $this->user->state = 5;
-                            $this->user->save();
+                            $userRepository->changeUserState($this->user, 5);
 
-                            $userCategories = $this->user->categories()->withCount('skills')->get();
+                            $userCategories = $userRepository->getUserCategories($this->user);
 
-                            $this->editLastBotMessageAndSendThereCategoriesList($this->toArray(),$userCategories);
+                            $this->editLastBotMessageAndSendThereCategoriesList($this->toArray(), $userCategories);
                         }
+
+                        if ($this->callback_query['data'] == 'continueVoting') {
+                            $skillForVote = $userRepository->getAvailableSkillForVoting($this->user);
+
+                            if ($skillForVote) {
+                                $this->sendSkillVoteMessage($this->toArray(), $skillForVote);
+                            } else {
+                                $this->sendNoSkillsAreAvailableForVoting($this->toArray());
+                            }
+                        }
+
+                        $json = $this->parseCallBackDataToJson();
+
+                        if ($json) {
+                            if (isset($json->skillId) && ($json->vote)) {
+                                $skill = Skill::find($json->skillId);
+                                $skill->assessment_points += $json->vote;
+                                $skill->save();
+
+                                $category = $skill->categories()->first();
+                                $category->assessment_points += $json->vote;
+                                $category->save();
+
+                                $this->user->total_points += $json->vote;
+                                $this->user->daily_votes_amount += 1;
+                                $this->user->save();
+
+                                $usa = new UserSkillAssessment();
+
+                                $usa->user_id = $this->user->id;
+                                $usa->skill_id = $skill->id;
+                                $usa->point = $json->vote;
+
+                                $usa->save();
+
+                                $this->sendMessageWannaContinueVoting($this->toArray(),
+                                    $this->user->daily_votes_amount);
+                            }
+                        }
+
                     }
                     break;
                 case 'waiting_for_new_skill':
                     if ($this->userTextIsValid()) {
-                        $category = $this->user->categories()->where('id',
-                            $this->user->last_clicked_category_id)->first();
+                        $category = $userRepository->getUserCategoryById($this->user,
+                            $this->user->last_clicked_category_id);
 
                         $category->skills()->create([
                             'description' => $this->text
                         ]);
 
-                        $userCategories = $this->user->categories()->withCount('skills')->get();
+                        $userCategories = $userRepository->getUserCategories($this->user);
 
                         $this->sendNewSkillAdded($this->toArray(), $userCategories);
 
-                        $this->user->state = 5;
-                        $this->user->save();
+                        $userRepository->changeUserState($this->user, 5);
                     }
                     break;
                 case 'waiting_for_new_category':
@@ -216,18 +274,18 @@ class TelegramUpdateProcessor
                             'title' => $this->text,
                         ]);
 
-                        $userCategories = $this->user->categories()->withCount('skills')->get();
+                        $userCategories = $userRepository->getUserCategories($this->user);
 
                         $this->newCategoryAdded($this->toArray(), $userCategories);
-                        $this->user->state = 5;
-                        $this->user->save();
+
+                        $userRepository->changeUserState($this->user, 5);
                     }
                     break;
             }
         }
     }
 
-    public function isValidQueryCallback()
+    public function isValidQueryCallback(): bool
     {
         if ($this->callback_query != null) {
             if (isset($this->callback_query['data'])) {
@@ -237,7 +295,7 @@ class TelegramUpdateProcessor
         return false;
     }
 
-    public function userTextIsValid()
+    public function userTextIsValid(): bool
     {
         if ($this->text != null) {
             if (!ctype_space($this->text)) {
@@ -258,7 +316,7 @@ class TelegramUpdateProcessor
 
     public function realizesNewUser(): bool
     {
-        return !User::where('username', $this->username)->exists();
+        return !User::where('chat_id', $this->chat_id)->exists();
     }
 
     public function realizesUserState()
@@ -266,8 +324,13 @@ class TelegramUpdateProcessor
         return User::where('username', $this->username)->first()->state;
     }
 
-    public function realizesSticker()
+    public function realizesSticker(): bool
     {
         return $this->sticker != null;
+    }
+
+    public function parseCallbackDataToJson()
+    {
+        return json_decode($this->callback_query['data']);
     }
 }

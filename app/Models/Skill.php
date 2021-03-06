@@ -11,6 +11,12 @@ class Skill extends Model
 
     protected $fillable = [
         'name',
-        'description'
+        'description',
+        'assessment_points',
     ];
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'category_skill', 'skill_id', 'category_id');
+    }
 }
